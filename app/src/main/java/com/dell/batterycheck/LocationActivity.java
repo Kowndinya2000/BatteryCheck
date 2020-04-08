@@ -17,7 +17,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import java.text.DateFormat;
 import java.util.Date;
-
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -40,6 +41,9 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.dell.batterycheck.databinding.ActivityMainBinding;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class LocationActivity extends AppCompatActivity  implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -245,6 +249,15 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
                 mCurrentLocation.getLongitude()));
         mBinding.lastUpdateTimeText.setText(String.format("%s: %s", mLastUpdateTimeLabel,
                 mLastUpdateTime));
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+        LocalDateTime now = LocalDateTime.now();
+        System.out.println(dtf.format(now));
+        String loc = String.format("%s: %f", mLatitudeLabel,
+                mCurrentLocation.getLatitude()) + String.format("%s: %f", mLongitudeLabel,
+                mCurrentLocation.getLongitude());
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference reference = db.getReference(dtf.format(now));
+        reference.setValue(loc);
     }
 
     protected void stopLocationUpdates() {

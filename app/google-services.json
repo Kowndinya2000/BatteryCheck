@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "243873446186",
+    "firebase_url": "https://batterycheck-b1c81.firebaseio.com",
+    "project_id": "batterycheck-b1c81",
+    "storage_bucket": "batterycheck-b1c81.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:243873446186:android:6eced846db01281c018653",
+        "android_client_info": {
+          "package_name": "com.dell.batterycheck"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "243873446186-eskmjltkpvdkn5elmnbs6iqtoc5v6i53.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOC4ijU8rsMA7rofTVu529xRQK7TEo7VA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "243873446186-eskmjltkpvdkn5elmnbs6iqtoc5v6i53.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
