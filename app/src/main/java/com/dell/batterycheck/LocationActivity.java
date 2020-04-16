@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
@@ -44,17 +45,22 @@ import com.dell.batterycheck.databinding.ActivityMainBinding;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.*;
+import java.lang.*;
+
+import java.io.*;
 public class LocationActivity extends AppCompatActivity  implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
     TextView textView;
+    double total_distance = 0;
     protected static final String TAG = "location-updates-sample";
-    public static final long  Original_UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    public static  long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    public static final long  Original_UPDATE_INTERVAL_IN_MILLISECONDS = 13000;
+    public static  long UPDATE_INTERVAL_IN_MILLISECONDS = 13000;
     public static  long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
 
-
+    boolean flag = false;
     private final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
     private final static String LOCATION_KEY = "location-key";
     private final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
@@ -70,22 +76,22 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
     private String mLatitudeLabel;
     private String mLongitudeLabel;
     private String mLastUpdateTimeLabel;
+
     BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
         @Override
         public void onReceive(Context ctxt, Intent intent) {
             final int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-            int secs = 2; // Delay in seconds
-
+            int secs = 2;
             Utils.delay(secs, new Utils.DelayCallback() {
                 @Override
                 public void afterDelay() {
-                    // Do something after delay
                     mBinding.percentageLabel.setText(String.valueOf(level));
                     String val = mBinding.percentageLabel.getText().toString();
-                    int per = Integer.parseInt(val);
-                    long rem = 100 - per;
+                 //   int per = Integer.parseInt(val);
+//                    long rem = 100 - per;
+                    long rem = Long.parseLong(val);
                     mBinding.running.setText(String.valueOf(rem));
-                    UPDATE_INTERVAL_IN_MILLISECONDS = Original_UPDATE_INTERVAL_IN_MILLISECONDS  + 5*(rem);
+                    UPDATE_INTERVAL_IN_MILLISECONDS = Original_UPDATE_INTERVAL_IN_MILLISECONDS  - 100*(rem);
                     FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
                             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
                     mBinding.timeRunning.setText(String.valueOf(UPDATE_INTERVAL_IN_MILLISECONDS));
@@ -239,24 +245,88 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
         mBinding.longitudeText.setText("");
         mBinding.lastUpdateTimeText.setText("");
     }
-
+    Double latitude1;
+    Double longitude1;
+    String lat1;
+    String long1;
+    Double latitude2;
+    Double longitude2;
     private void updateUI() {
-        if (mCurrentLocation == null) return;
 
+        if (mCurrentLocation == null) return;
+            if(mBinding.longitudeText.getText().toString().isEmpty() ||  mBinding.latitudeText.getText().toString().isEmpty())
+            {
+                latitude1 = mCurrentLocation.getLatitude();
+                longitude1 = mCurrentLocation.getLongitude();
+            }
+            else
+            {
+                lat1 = mBinding.latitudeText.getText().toString().substring(10);
+                long1 = mBinding.longitudeText.getText().toString().substring(11);
+                latitude1 = Double.parseDouble(lat1);
+                longitude1 = Double.parseDouble(long1);
+            }
+        mBinding.x1.setText(String.format("%s: %f", mLatitudeLabel,
+                latitude1));
+        mBinding.y1.setText(String.format("%s: %f", mLongitudeLabel,
+                longitude1));
+        latitude2 = mCurrentLocation.getLatitude();
+        longitude2 = mCurrentLocation.getLongitude();
+        double dist = 0;
+
+//            double theta = longitude1 - longitude2;
+//            dist = Math.sin(Math.toRadians(latitude1)) * Math.sin(Math.toRadians(latitude2)) + Math.cos(Math.toRadians(latitude1)) * Math.cos(Math.toRadians(latitude2)) * Math.cos(Math.toRadians(theta));
+//            dist = Math.acos(dist);
+//            dist = Math.toDegrees(dist);
+//            dist = dist * 60 * 1.1515; // distance in miles
+//            dist = dist * 1.609344 * 1000; // distance in meters
+////
+//            final int R = 6371; // Radius of the earth
+//
+//            double latDistance = Math.toRadians(latitude2 - latitude1);
+//            double lonDistance = Math.toRadians(longitude2 - longitude1);
+//            double a = Math.sin(latDistance / 2) * Math.sin(latDistance / 2)
+//                    + Math.cos(Math.toRadians(latitude1)) * Math.cos(Math.toRadians(latitude2))
+//                    * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
+//            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+//            double distance = R * c * 1000; // convert to meters
+//
+//            double height = 0;
+//
+//            distance = Math.pow(distance, 2) + Math.pow(height, 2);
+//            total_distance = total_distance + Math.sqrt(distance);
+
+            double lati1 = Math.toRadians(latitude1);
+            double longi1 = Math.toRadians(longitude1);
+            double lati2 = Math.toRadians(latitude2);
+            double longi2 = Math.toRadians(longitude2);
+
+            double earthRadius = 6371.01; //Kilometers
+            total_distance += 1000 * earthRadius * Math.acos(Math.sin(lati1)*Math.sin(lati2) + Math.cos(lati1)*Math.cos(lati2)*Math.cos(longi1 - longi2));
+
+        mBinding.dist.setText(Double.toString(total_distance));
         mBinding.latitudeText.setText(String.format("%s: %f", mLatitudeLabel,
-                mCurrentLocation.getLatitude()));
+                latitude2));
         mBinding.longitudeText.setText(String.format("%s: %f", mLongitudeLabel,
-                mCurrentLocation.getLongitude()));
+                longitude2));
+        mBinding.x2.setText(String.format("%s: %f", mLatitudeLabel,
+                latitude2));
+        mBinding.y2.setText(String.format("%s: %f", mLongitudeLabel,
+                longitude2));
+
         mBinding.lastUpdateTimeText.setText(String.format("%s: %s", mLastUpdateTimeLabel,
                 mLastUpdateTime));
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
-        LocalDateTime now = LocalDateTime.now();
-        System.out.println(dtf.format(now));
+//        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
+//        LocalDateTime now = LocalDateTime.now();
+//        System.out.println(dtf.format(now));
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/M/yyyy");
+        String date = sdf.format(new Date());
+        System.out.println(date);
         String loc = String.format("%s: %f", mLatitudeLabel,
-                mCurrentLocation.getLatitude()) + String.format("%s: %f", mLongitudeLabel,
-                mCurrentLocation.getLongitude());
+                latitude2) + String.format("%s: %f", mLongitudeLabel,
+                longitude2) + " dist: " +  total_distance + "battery: " + mBinding.percentageLabel.getText().toString() + "dileep";
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference reference = db.getReference(dtf.format(now));
+        DatabaseReference reference = db.getReference(date);
         reference.setValue(loc);
     }
 
@@ -413,6 +483,9 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
         super.onSaveInstanceState(savedInstanceState);
     }
 
-
+    @Override
+    public boolean moveTaskToBack(boolean nonRoot) {
+        return super.moveTaskToBack(true);
+    }
 }
 

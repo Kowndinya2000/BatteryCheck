@@ -64,17 +64,50 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/statusLabel"
-            android:text="Charging state - will be displayed later"
-            android:textSize="24sp"
-            android:layout_marginTop="60dp"
+            android:text="previous"
+            android:visibility="gone"
+            android:textSize="12sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:id="@+id/x1"
+            />
+        <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+            android:id="@+id/y1"
+            android:visibility="gone"
+        android:textSize="12sp"
+        />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="now"
+            android:visibility="gone"
+            android:textSize="12sp"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:id="@+id/x2"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/y2"
+            android:visibility="gone"
+            android:textSize="12sp"
             />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="46"
-            android:textSize="24sp"
-            android:layout_marginTop="30dp"
+            android:textSize="12sp"
             android:id="@+id/percentageLabel"
             />
         <TextView
@@ -82,12 +115,24 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/holo_red_dark"
             android:id="@+id/running"
-            android:text="hi"/>
+            android:text=""/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@android:color/holo_red_dark"
             android:id="@+id/time_running"
-            android:text="hi"/>
+            android:text=""/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_blue_dark"
+            android:text="Distance: (in meters)"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/holo_purple"
+            android:id="@+id/dist"
+            android:text="0"/>
     </LinearLayout>
 </layout>
