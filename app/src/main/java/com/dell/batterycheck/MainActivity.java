@@ -1,8 +1,10 @@
 package com.dell.batterycheck;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -12,13 +14,22 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 
 import com.dell.batterycheck.databinding.ActivityMainBinding;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -33,14 +44,16 @@ public class MainActivity extends working{
     private ActivityMainBinding mBinding;
     private Location mCurrentLocation;
     private String mLastUpdateTime;
-    LocationRequest locationRequest;
     Boolean mRequestingLocationUpdates;
     final static String REQUESTING_LOCATION_UPDATES_KEY = getREQUESTING_LOCATION_UPDATES_KEY();
     private final static String LOCATION_KEY = getLOCATION_KEY();
     private final static String LAST_UPDATED_TIME_STRING_KEY = getLAST_UPDATED_TIME_STRING_KEY();
     //private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = getPERMISSIONS_REQUEST_ACCESS_FINE_LOCATION();
-
+    private static final int REQUEST_CHECK_SETTINGS = getREQUEST_CHECK_SETTINGS();
     private static long UPDATE_INTERVAL_IN_MILLISECONDS = getUPDATE_INTERVAL_IN_MILLISECONDS();
+    LocationRequest mLocationRequest = getmLocationRequest();
+
+    //mGoogleApiClient
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,14 +69,13 @@ public class MainActivity extends working{
         mLastUpdateTime = getmLastUpdateTime();
        // buildGoogleApiClient();
         //this.registerReceiver(this.mBatInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-        locationRequest = getmLocationRequest();
+        mLocationRequest = getmLocationRequest();
         mRequestingLocationUpdates = getmRequestingLocationUpdates();
     }
 
     @Override
     public void setVal(String v1, String v2, String v3) {
         super.setVal(v1, v2, v3);
-
         mBinding.percentageLabel.setText(v1);
         mBinding.running.setText(v2);
         mBinding.timeRunning.setText(v3);
@@ -121,6 +133,42 @@ public class MainActivity extends working{
             stopLocationUpdates();
         }
     }
+
+    @Override
+    public void startLocationUpdates() {
+        Log.i(TAG, "startLocationUpdates");
+
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+                final Status status = locationSettingsResult.getStatus();
+
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, MainActivity.this);
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        try {
+                            status.startResolutionForResult(MainActivity.this, REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way
+                        // to fix the settings so we won't show the dialog.
+                        break;
+                }
+            }
+        });
+
+    }
+
     void setButtonsEnabledState() {
         if (mRequestingLocationUpdates) {
             mBinding.startUpdatesButton.setEnabled(false);
@@ -218,6 +266,27 @@ public class MainActivity extends working{
                 break;
             }
         }
+    }
+    @Override
+    public void showRationaleDialog() {
+        new AlertDialog.Builder(this)
+                .setPositiveButton("To give permission", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ActivityCompat.requestPermissions(MainActivity.this,
+                                new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+                    }
+                })
+                .setNegativeButton("don't do", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Toast.makeText(MainActivity.this,"Location permission not allowed", Toast.LENGTH_SHORT).show();
+                        mRequestingLocationUpdates = false;
+                    }
+                })
+                .setCancelable(false)
+                .setMessage("This app needs to allow the use of location information.")
+                .show();
     }
 
     @Override

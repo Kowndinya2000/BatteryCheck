@@ -65,7 +65,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     public static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int REQUEST_CHECK_SETTINGS = 10;
     private ActivityMainBinding mBinding;
-    private GoogleApiClient mGoogleApiClient;
+    public GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
     private Boolean mRequestingLocationUpdates;
@@ -74,7 +74,10 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     private String mLongitudeLabel;
     private String mLastUpdateTimeLabel;
     private String percentageLabel,running,timeRunning;
-
+    public static int getREQUEST_CHECK_SETTINGS()
+    {
+        return  REQUEST_CHECK_SETTINGS;
+    }
 
     BroadcastReceiver mBatInfoReceiver = new BroadcastReceiver(){
         @Override
@@ -121,6 +124,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
             percentageLabel = String.valueOf(level);
             running = String.valueOf(rem);
             timeRunning = String.valueOf(UPDATE_INTERVAL_IN_MILLISECONDS);
+            setVal(percentageLabel,running,timeRunning);
             if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
                 startLocationUpdates();
             }
