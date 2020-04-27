@@ -46,7 +46,6 @@ public class MainActivity extends working{
         mBinding.running.setText(v2);
         mBinding.timeRunning.setText(v3);
     }
-
     @Override
     public void updateValuesFromBundle(Bundle savedInstanceState) {
         super.updateValuesFromBundle(savedInstanceState);
