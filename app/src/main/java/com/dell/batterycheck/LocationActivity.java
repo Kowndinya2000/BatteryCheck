@@ -90,7 +90,7 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
                  //   int per = Integer.parseInt(val);
 //                    long rem = 100 - per;
                     long rem = Long.parseLong(val);
-                    mBinding.running.setText(String.valueOf(rem));
+                    //mBinding.running.setText(String.valueOf(rem));
                     UPDATE_INTERVAL_IN_MILLISECONDS = Original_UPDATE_INTERVAL_IN_MILLISECONDS  - 100*(rem);
                     FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
                             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
@@ -108,7 +108,7 @@ public class LocationActivity extends AppCompatActivity  implements GoogleApiCli
             String val = mBinding.percentageLabel.getText().toString();
             int per = Integer.parseInt(val);
             long rem = 100 - per;
-            mBinding.running.setText(String.valueOf(rem));
+            //mBinding.running.setText(String.valueOf(rem));
             UPDATE_INTERVAL_IN_MILLISECONDS = Original_UPDATE_INTERVAL_IN_MILLISECONDS  + 5*(rem);
             FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
                     UPDATE_INTERVAL_IN_MILLISECONDS / 2;

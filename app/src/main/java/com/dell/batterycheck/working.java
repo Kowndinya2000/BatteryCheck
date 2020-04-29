@@ -61,7 +61,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     public GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
-    public Boolean mRequestingLocationUpdates;
+   // public Boolean mRequestingLocationUpdates;
     private String mLastUpdateTime;
     private String percentageLabel,running,timeRunning;
     public boolean global_permission = false;
@@ -86,14 +86,18 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
                     percentageLabel = String.valueOf(level);
                     running = String.valueOf(rem);
                     timeRunning = String.valueOf(UPDATE_INTERVAL_IN_MILLISECONDS);
-                    setVal(percentageLabel,running,timeRunning);
+                    onBatteryLevelChanged();
                 }
             });
 
         }
     };
-    public void setVal(String v1, String v2, String v3)
+//    public void setVal(String v1, String v2, String v3)
+//    {
+//    }
+    public void onBatteryLevelChanged()
     {
+
     }
     BroadcastReceiver mBatInfoReceiver2 = new BroadcastReceiver(){
         @Override
@@ -108,8 +112,9 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
             percentageLabel = String.valueOf(level);
             running = String.valueOf(rem);
             timeRunning = String.valueOf(UPDATE_INTERVAL_IN_MILLISECONDS);
-            setVal(percentageLabel,running,timeRunning);
-            if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+            //setVal(percentageLabel,running,timeRunning);
+            onBatteryLevelChanged();
+            if (mGoogleApiClient.isConnected() && global_button) {
                 startLocationUpdates();
             }
         }
@@ -119,7 +124,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     {
 
         super.onCreate(savedInstanceState);
-        mRequestingLocationUpdates = false;
+       // mRequestingLocationUpdates = false;
         mLastUpdateTime = "";
         updateValuesFromBundle(savedInstanceState);
         buildGoogleApiClient();
@@ -134,23 +139,20 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     public static String getLOCATION_KEY(){
         return LOCATION_KEY;
     }
-      public String getBatteryInfo1(int val)
+      public String getCurrentBatteryLevel()
       {
-          switch (val){
-              case 0:
-                  return percentageLabel;
-              case 1:
-                  return running;
-              default:
-                  return timeRunning;
-          }
+          return percentageLabel;
       }
+    public String getCurrentUpdateInterval()
+    {
+        return timeRunning;
+    }
 
     public void updateValuesFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
             if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-                mRequestingLocationUpdates = savedInstanceState.getBoolean(
+                global_button = savedInstanceState.getBoolean(
                         REQUESTING_LOCATION_UPDATES_KEY);
             }
 
@@ -162,11 +164,11 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
             }
         }
     }
-    public Location getmCurrentLocation()
+    public Location getLocation()
     {
          return mCurrentLocation;
     }
-    public String getmLastUpdateTime()
+    public String getLastLocationUpdateTime()
     {
         return mLastUpdateTime;
     }
@@ -185,19 +187,22 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+    public boolean isLocationServiceOn(){
+        return global_button;
+    }
 
-    public void startUpdatesButtonHandler(View view) {
+    public void startLocationService() {
         if (!isPlayServicesAvailable(this)) return;
-        if (!mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = true;
-        }
-        else
-        {
-                return;
-        }
+//        if (!mRequestingLocationUpdates) {
+//            mRequestingLocationUpdates = true;
+//        }
+//        else
+//        {
+//                return;
+//        }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            global_button = true;
             startLocationUpdates();
+            global_button = true;
         }
         else {
             if (ActivityCompat.shouldShowRequestPermissionRationale(this, android.Manifest.permission.ACCESS_FINE_LOCATION)) {
@@ -207,22 +212,22 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
             }
         }
     }
-    public void stopUpdatesButtonHandler(View view) {
-        if (mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = false;
-            stopLocationUpdates();
-        }
-    }
+//    public void stopUpdatesButtonHandler(View view) {
+//        if (mRequestingLocationUpdates) {
+//            mRequestingLocationUpdates = false;
+//            stopLocationUpdates();
+//        }
+//    }
     public void startLocationUpdates() {
         Log.i(TAG, "startLocationUpdates");
 
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
-        PendingResult<LocationSettingsResult> result =
-                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+            PendingResult<LocationSettingsResult> result =
+                    LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
         result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
-            @Override
-            public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
+                @Override
+                public void onResult(@NonNull LocationSettingsResult locationSettingsResult) {
                 final Status status = locationSettingsResult.getStatus();
 
                 switch (status.getStatusCode()) {
@@ -246,6 +251,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
     protected void stopLocationUpdates() {
         Log.i(TAG, "stopLocationUpdates");
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        global_button = false;
     }
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
@@ -254,9 +260,10 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     global_permission = true;
                     startLocationUpdates();
+                    global_button = true;
                 } else {
                     if (!ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-                        mRequestingLocationUpdates = false;
+                        global_button = false;
                         Toast.makeText(working.this, "To enable the function of this application, please enable the location information permission of the application from the setting screen of the terminal.", Toast.LENGTH_SHORT).show();
                     } else {
                         showRationaleDialog();
@@ -279,7 +286,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Toast.makeText(working.this,"Location permission not allowed", Toast.LENGTH_SHORT).show();
-                        mRequestingLocationUpdates = false;
+                        global_button = false;
                     }
                 })
                 .setCancelable(false)
@@ -302,6 +309,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         startLocationUpdates();
+                        global_button = true;
                         break;
                     case Activity.RESULT_CANCELED:
                         break;
@@ -347,7 +355,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
         }
-        if (mRequestingLocationUpdates) {
+        if (global_button) {
             startLocationUpdates();
         }
     }
@@ -356,6 +364,11 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
         Log.i(TAG, "onLocationChanged");
         mCurrentLocation = location;
         mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+        onLocationUpdate();
+    }
+    public void onLocationUpdate()
+    {
+
     }
 
     @Override
@@ -368,7 +381,7 @@ public class working extends AppCompatActivity implements GoogleApiClient.Connec
         Log.i(TAG, "Connection failed: ConnectionResult.getErrorCode() = " + connectionResult.getErrorCode());
     }
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, global_button);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
